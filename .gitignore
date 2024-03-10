@@ -29,3 +29,6 @@ coverage
 *.sw?
 
 _eslintrc.js
+
+package-lock.json
+pnpm-lock.yaml
