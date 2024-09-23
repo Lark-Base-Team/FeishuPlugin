@@ -74,59 +74,60 @@ function pagesCreate(name: string, f: (v: { id: string, name: string }) => void)
 }
 
 function start(records: IRecord[], pr: Progress, inField: IAttachmentField, outField: IAttachmentField) {
-  return Promise.all(
-    records
-      .map(async (record) => {
-        try {
-          const val = record.fields[modelData.input!] as IOpenAttachment[]
-          if (!val)
-            return
-          const urls = await inField.getAttachmentUrls(record.recordId)
-          if (urls.length === 0)
-            return
-          const files: File[] = []
-          if (modelData.model) {
+  return new Promise(async (resolve, reject) => {
+    for (const record of records) {
+      try {
+        const val = record.fields[modelData.input!] as IOpenAttachment[]
+        if (!val)
+          return
+        const urls = await inField.getAttachmentUrls(record.recordId)
+        if (urls.length === 0)
+          return
+        const files: File[] = []
+        if (modelData.model) {
+          const merger = new PDFMerger()
+          for (const url of urls)
+            await merger.add(url)
+          const blob = await merger.saveAsBlob()
+          files.push(new File([blob], val[0].name))
+        }
+        else {
+          let text = modelData.pages
+          if (!text)
+            text = '1'
+          else if (text.startsWith('$BDAT$'))
+            text = text.slice(6)
+          else if (text in record.fields)
+            text = TextFieldToStr(record.fields[text])
+
+          const pages = text.replaceAll(/\b(?:end|e(?:nd)?)\b/gi, '1000').replaceAll(/\b(?:start|s(?:tart)?)\b/gi, '1')
+            .split('/')
+          console.log(record.recordId, text, pages)
+
+          for (const page of pages) {
             const merger = new PDFMerger()
-            for (const url of urls)
-              await merger.add(url)
+            await merger.add(urls[0], page)
             const blob = await merger.saveAsBlob()
             files.push(new File([blob], val[0].name))
           }
-          else {
-            let text = modelData.pages
-            if (!text)
-              text = '1'
-            else if (text.startsWith('$BDAT$'))
-              text = text.slice(6)
-            else if (text in record.fields)
-              text = TextFieldToStr(record.fields[text])
-
-            const pages = text.replaceAll(/\b(?:end|e(?:nd)?)\b/gi, '1000').replaceAll(/\b(?:start|s(?:tart)?)\b/gi, '1')
-              .split('/')
-            console.log(record.recordId, text, pages)
-
-            for (const page of pages) {
-              const merger = new PDFMerger()
-              await merger.add(urls[0], page)
-              const blob = await merger.saveAsBlob()
-              files.push(new File([blob], val[0].name))
-            }
-          }
-          await outField.setValue(record.recordId, files)
         }
-        catch (e) {
-          layout.value?.error(t('unknown mistake'), {
-            recordId: record.recordId,
-            tableId: tableId.value,
-            viewId: viewId.value,
-          })
-          console.error(e)
-        }
-        finally {
-          pr?.add()
-        }
-      }),
-  )
+        await outField.setValue(record.recordId, files)
+      }
+      catch (e) {
+        layout.value?.error(t('unknown mistake'), {
+          recordId: record.recordId,
+          tableId: tableId.value,
+          viewId: viewId.value,
+        })
+        reject(e)
+        console.error(e)
+      }
+      finally {
+        pr?.add()
+      }
+    }
+    resolve([]);
+  });
 }
 
 async function main(all?: boolean) {
