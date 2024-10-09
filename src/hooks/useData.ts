@@ -188,7 +188,6 @@ export function useData() {
     layout.value.init()
     layout.value.update(true, t('Step 1 - Getting Table'))
     layout.value.update(true, t('Step 2 - Getting Records'))
-    let promise: any[] = []
     const pr = layout.value.spin(t('Record'), 0)
     if (all) {
       let records: IGetRecordsResponse = {
@@ -221,19 +220,18 @@ export function useData() {
       }
       const recordIdList = await bitable.ui.selectRecordIdList(tableId.value!, vid)
       pr.addTotal(recordIdList.length)
-      promise = recordIdList.map(async (item) => {
-        const record = await table.value!.getRecordById(item)
+      for (const recordId of recordIdList) {
+        const record = await table.value!.getRecordById(recordId)
         await f({
           pr,
           records: {
             hasMore: false,
-            records: [{ fields: record.fields, recordId: item }],
+            records: [{ fields: record.fields, recordId }],
             total: 0,
           },
         })
-      })
+      }
     }
-    await Promise.all(promise)
   }
 
   async function getRecordss({
