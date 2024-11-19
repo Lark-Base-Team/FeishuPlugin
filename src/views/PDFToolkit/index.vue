@@ -74,15 +74,11 @@ function pagesCreate(name: string, f: (v: { id: string, name: string }) => void)
 }
 
 function start(records: IRecord[], pr: Progress, inField: IAttachmentField, outField: IAttachmentField) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     for (const record of records) {
       try {
         const val = record.fields[modelData.input!] as IOpenAttachment[]
-        if (!val)
-          return
         const urls = await inField.getAttachmentUrls(record.recordId)
-        if (urls.length === 0)
-          return
         const files: File[] = []
         if (modelData.model) {
           const merger = new PDFMerger()
@@ -102,7 +98,6 @@ function start(records: IRecord[], pr: Progress, inField: IAttachmentField, outF
 
           const pages = text.replaceAll(/\b(?:end|e(?:nd)?)\b/gi, '1000').replaceAll(/\b(?:start|s(?:tart)?)\b/gi, '1')
             .split('/')
-          console.log(record.recordId, text, pages)
 
           for (const page of pages) {
             const merger = new PDFMerger()
@@ -119,8 +114,6 @@ function start(records: IRecord[], pr: Progress, inField: IAttachmentField, outF
           tableId: tableId.value,
           viewId: viewId.value,
         })
-        reject(e)
-        console.error(e)
       }
       finally {
         pr?.add()
@@ -147,7 +140,7 @@ async function main(all?: boolean) {
       return start(records.records, pr, inField, outField)
     },
     all,
-    3,
+    200,
   )
     .catch((error: Error) => {
       errorHandle('main', error)

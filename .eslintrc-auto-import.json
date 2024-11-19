@@ -84,6 +84,7 @@
     "IFieldMeta": true,
     "bitable": true,
     "IGetRecordsResponse": true,
+    "IGetRecordsByPageResponse": true,
     "IRecord": true,
     "useI18n": true,
     "FieldType": true,
@@ -108,6 +109,9 @@
     "onWatcherCleanup": true,
     "useId": true,
     "useModel": true,
-    "useTemplateRef": true
+    "useTemplateRef": true,
+    "DirectiveBinding": true,
+    "MaybeRef": true,
+    "MaybeRefOrGetter": true
   }
 }

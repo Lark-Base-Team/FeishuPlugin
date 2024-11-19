@@ -177,9 +177,9 @@ export function useData() {
   }
 
   async function getRecords(
-    f: (val: { pr: Progress, records: IGetRecordsResponse }) => Promise<any>,
+    f: (val: { pr: Progress, records: IGetRecordsByPageResponse }) => Promise<any>,
     all = false,
-    pageSize = 1000,
+    pageSize = 200,
   ): Promise<void> {
     if (!layout.value)
       throw new Error('layout not loaded')
@@ -190,20 +190,25 @@ export function useData() {
     layout.value.update(true, t('Step 2 - Getting Records'))
     const pr = layout.value.spin(t('Record'), 0)
     if (all) {
-      let records: IGetRecordsResponse = {
+      let size = 0;
+      const recordsData: IGetRecordsByPageResponse = {
         hasMore: true,
         records: [],
         total: 0,
+        pageToken: undefined,
       }
-      const size = (await table.value.getRecordIdList()).length
-      pr.addTotal(size)
-      while (records.hasMore) {
-        records = await table.value.getRecords({
+      while (recordsData.hasMore) {
+       const { total, hasMore, pageToken, records } = await table.value.getRecordsByPage({
           pageSize,
-          pageToken: records.pageToken,
-        })
-        await f({ pr, records })
+          pageToken: recordsData.pageToken,
+        });
+        recordsData.hasMore = hasMore;
+        recordsData.pageToken = pageToken;
+        recordsData.records.push(...records)
+        size = total;
       }
+      pr.addTotal(size)
+      await f({ pr, records: recordsData })
     }
     else {
       let vid = viewId.value
@@ -289,20 +294,26 @@ export function useData() {
         }
       }
       else {
-        let records: IGetRecordsResponse = {
+        let recordsData: IGetRecordsByPageResponse = {
           hasMore: true,
           records: [],
           total: 0,
+          pageToken: undefined,
         }
-        const size = (await table.value.getRecordIdList()).length
-        pr.addTotal(size)
-        while (records.hasMore) {
-          records = await table.value.getRecords({
+        let size = 0;
+        while (recordsData.hasMore) {
+          const { total, records, hasMore, pageToken } = await table.value.getRecordsByPage({
             pageSize,
-            pageToken: records.pageToken,
+            pageToken: recordsData.pageToken,
           })
-          for (const item of records.records)
-            pool.run(item)
+          recordsData.hasMore = hasMore;
+          recordsData.pageToken = pageToken;
+          size = total;
+          recordsData.records = records;
+        }
+        pr.addTotal(size)
+        for (const item of recordsData.records){
+          pool.run(item)
         }
       }
       await pool.all()

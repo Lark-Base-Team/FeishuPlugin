@@ -1,19 +1,27 @@
 {
   "compilerOptions": {
+    "lib": [
+      "es2021",
+      "dom"
+    ],
     "target": "ESNext",
     "jsx": "preserve",
     "useDefineForClassFields": true,
-
     "baseUrl": "./",
     "module": "ESNext",
     /* Bundler mode */
     // "moduleResolution": "bundler",
     "moduleResolution": "node",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
     "resolveJsonModule": true,
-    "types": ["@intlify/unplugin-vue-i18n/messages", "vite/client"],
+    "types": [
+      "@intlify/unplugin-vue-i18n/messages",
+      "vite/client"
+    ],
     "allowImportingTsExtensions": true,
     "allowJs": true,
     /* Linting */
@@ -43,5 +51,9 @@
     "vite.config.d.ts",
     "eslint.config.js"
   ],
-  "exclude": ["node_modules", "build", "dist"]
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist"
+  ]
 }

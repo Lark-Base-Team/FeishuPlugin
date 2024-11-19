@@ -32,6 +32,7 @@ const baseType = [
   'IOpenSegment',
   'IFieldMeta',
   'IGetRecordsResponse',
+  'IGetRecordsByPageResponse',
   'IRecord',
   'IOpenSingleSelect',
   'IOpenUser',
