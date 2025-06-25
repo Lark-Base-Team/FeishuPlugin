@@ -10,3 +10,10 @@ You can learn more in the [Base Extension Development Guide](https://bytedance.f
 ## Install packages
 
 Install packages in Shell pane or search and add in Packages pane.
+
+
+**根据您的芯片架构选择安装（Apple Silicon 芯片）**
+pnpm add @swc/core-darwin-arm64
+
+**或 Intel 芯片**
+pnpm add @swc/core-darwin-x64
