@@ -11,7 +11,7 @@ You can learn more in the [Base Extension Development Guide](https://bytedance.f
 
 Install packages in Shell pane or search and add in Packages pane.
 
-
+node v18.15.0
 **根据您的芯片架构选择安装（Apple Silicon 芯片）**
 pnpm add @swc/core-darwin-arm64
 
